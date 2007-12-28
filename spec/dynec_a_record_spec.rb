@@ -14,12 +14,12 @@ describe Dynect, "when used to manage A records" do
   end
 
   it "should be able to list records" do
-    @d.should respond_to(:list_records)
+    @d.should respond_to(:list_a_records)
   end
   
   it "should be able to accept additional parameters to filter the records you want" do
     @driver.should_receive(:RecordGet).and_return(@result)
-    @d.list_records("type" => "A")
+    @d.list_a_records("type" => "A")
   end
   
   it "should be able to add an A record" do
