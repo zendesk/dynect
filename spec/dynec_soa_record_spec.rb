@@ -13,7 +13,6 @@ describe Dynect, "when used to manage SOA" do
     @result = mock("test")
     @result.stub!(:errors).and_return(false)
     @result.stub!(:[])
-    
   end
   
   it "should be able to update SOA elements" do
@@ -25,4 +24,9 @@ describe Dynect, "when used to manage SOA" do
     @d.update_soa("rname" => "root.domain.com")
   end
   
+  it "should list SOA elements" do
+    @driver.should_receive(:RecordGet).and_return(@result)
+    @result.stub!(:records).and_return([])
+    @d.list_soa("foo.domain.com")
+  end  
 end

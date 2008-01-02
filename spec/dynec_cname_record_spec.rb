@@ -20,6 +20,7 @@ describe Dynect, "when used to manage CNAME records" do
   
   it "should be able to accept additional parameters to filter the records you want" do
     @driver.should_receive(:RecordGet).and_return(@result)
+    @result.stub!(:records)
     @d.list_cname_records("zone.domain.com")
   end
   

@@ -14,11 +14,13 @@ class Dynect
   end
   
   # Lists the zones associated with the accout. Specify a zone to get information on a specific one
-  def list_zones(zone = "")
-    args = @creds.merge("zone" => zone) unless zone.empty?
+  def list_zones(zone = nil)
+    args = @creds
+    args["zone"] = zone if zone
     
     response = @driver.ZoneGet args
     check_for_errors("when listing zone(s)", response)
+    response.zones
   end
   
   # Create a new zone
@@ -47,6 +49,7 @@ class Dynect
     
     response = @driver.RecordGet args
     check_for_errors("when listing records", response)
+    response.records
   end
   
   def add_a_record(zone, address, options = {})
@@ -78,7 +81,8 @@ class Dynect
     args.merge!(options)
     
     response = @driver.RecordGet args
-    check_for_errors("when listing CNAME records", response) 
+    check_for_errors("when listing CNAME records", response)
+    response.records
   end
   
   # Adds a CNAME record for the specified zone
@@ -111,12 +115,13 @@ class Dynect
     check_for_errors("when updating a SOA record", response)
   end
   
-  def list_soa(zone, options ={})
+  def list_soa(zone, options = {})
     args = @creds.merge("type" => "SOA", "zone" => zone)
     args.merge!(options)
     
     response = @driver.RecordGet args
-    check_for_errors("when listing SOA records", response) 
+    check_for_errors("when listing SOA records", response)
+    response.records.first
   end
   
 private

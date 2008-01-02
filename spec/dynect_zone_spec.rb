@@ -21,11 +21,14 @@ describe Dynect, "when used to manage zones" do
   
   it "should be able to retireve info about a specific zone" do
     @driver.should_receive(:ZoneGet).and_return(@result)
+    @result.stub!(:zones)
     @d.list_zones("test.domain.com")
   end
   
-  it "should call the driver when list zones is called" do 
-    @driver.should_receive(:ZoneGet).and_return(@result)
+  it "should call the driver when list zones is called" do
+    expected_creds = {"cust" => "customer", "user" => "username", "pass" => "password"}
+    @driver.should_receive(:ZoneGet).with(expected_creds).and_return(@result)
+    @result.stub!(:zones)
     @d.list_zones
   end
   
