@@ -12,6 +12,7 @@ describe Dynect, "when used to manage zones" do
     
     @result = mock("test")
     @result.stub!(:errors).and_return(false)
+    @result.stub!(:[])
   end
   
   it "should have a list zones method" do
@@ -33,25 +34,17 @@ describe Dynect, "when used to manage zones" do
   end
       
   it "should require a zone name and type when creating a zone" do
-    result = mock("test")
-    result.stub!(:errors).and_return(false)
-    @driver.should_receive(:ZoneAdd).and_return(result)
+    @driver.should_receive(:ZoneAdd).and_return(@result)
     @d.create_zone("test.domain.com", "primary")
   end
   
   it "should be able to accept additional parameters when creating a zone"  do
-    result = mock("test", :null_object => true)
-    result.stub!(:errors).and_return(false)
-    @driver.should_receive(:ZoneAdd).and_return(result)
+    @result.stub!(:call)
+    @driver.should_receive(:ZoneAdd).and_return(@result)
     
     options = {"ttl" => "24", "data" => {"rname" => "test@example.com", "master" => "192.168.1.1"}}
     
     @d.create_zone("test.domain.com", "primary", options).should_not raise_error    
   end
-
-  it "should require an rname value when creating a primary zone"
-  
-  it "should require a master value when creating a secondary zone"
   
 end
-
