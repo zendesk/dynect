@@ -124,6 +124,30 @@ class Dynect
     response.records.first
   end
   
+  def list_nodes(zone, options = {})
+    args = @creds.merge("zone" => zone)
+    args.merge!(options)
+    
+    response = @driver.NodeGet args
+    check_for_errors("when listing nodes", response)
+  end
+  
+  def add_node(node, zone, options ={})
+    args = @creds.merge("zone" => zone, "node" => "#{node}.#{zone}")
+    args.merge!(options)
+    
+    response = @driver.NodeAdd args
+    check_for_errors("when adding a node", response)
+  end
+  
+  def delete_node(node, zone, options ={})
+    args = @creds.merge("zone" => zone, "node" => "#{node}.#{zone}")
+    args.merge!(options)
+    
+    response = @driver.NodeDelete args
+    check_for_errors("when deleting a node", response)
+  end
+  
 private
 
   def check_for_errors(message, response)
@@ -144,6 +168,9 @@ private
     @driver.add_method("RecordAdd", "args")
     @driver.add_method("RecordUpdate", "args")
     @driver.add_method("RecordDelete", "args")
+    @driver.add_method("NodeGet", "args")
+    @driver.add_method("NodeAdd", "args")
+    @driver.add_method("NodeDelete", "args")
   end
   
 end

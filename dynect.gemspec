@@ -1,9 +1,9 @@
 Gem::Specification.new do |s|
         s.has_rdoc = true
         s.name = %q{dynect}
-        s.version = "0.0.1" 
+        s.version = "0.0.2" 
         s.rubyforge_project = 'dynect'
-        s.date = %q{2008-01-02}
+        s.date = %q{2008-01-03}
         s.summary = %q{Simple wrapper for Dynect SOAP API.}
         s.description = %q{Simple wrapper for Dynect SOAP API.}
         s.email = %q{dave@obtiva.com}
