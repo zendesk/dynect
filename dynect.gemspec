@@ -13,6 +13,6 @@ Gem::Specification.new do |s|
         s.add_dependency('soap4r')
         s.add_dependency('rspec')
         s.requirements = []
-        s.files = ["lib/dynect.rb"]
+        s.files = ["README", "lib/dynect.rb"]
         s.test_files = Dir.glob("spec/*_spec.rb")
 end
