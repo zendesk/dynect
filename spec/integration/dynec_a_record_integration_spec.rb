@@ -13,20 +13,20 @@ describe Dynect, "when used to manage A records" do
   end
   
   it "should be able to list records" do
-    results = @d.list_a_records("zone" => @config["zone"])
-    results.status.should == "success"
+    results = @d.list_a_records(@config["zone"])
+    results.class.should == Array
   end
   
   it "should be able to add an A record" do
-    results = @d.add_a_record(@config["zone"], "10.0.0.1" )
-    results.status.should == "success"
+    results = @d.add_a_record(@config["zone"], "10.0.0.1")
+    results.class.should == Array
   end
   
   it "should be able to update an A record" do
-    results = @d.list_a_records("zone" => @config["zone"])
-    results.status.should == "success"
+    results = @d.list_a_records(@config["zone"])
+    results.class.should == Array
     
-    record = results.records.find {|x| x["rdata"]["address"] == "10.0.0.1"}
+    record = results.find {|x| x["rdata"]["address"] == "10.0.0.1"}
     
     if record
       update_result = @d.update_a_record(record["record_id"], "rdata" => {"address" => "10.0.0.1"})
@@ -35,10 +35,10 @@ describe Dynect, "when used to manage A records" do
   end
   
   it "should be able to delete an A record" do
-    results = @d.list_a_records("zone" => @config["zone"])
-    results.status.should == "success"
+    results = @d.list_a_records(@config["zone"])
+    results.class.should == Array
     
-    record = results.records.find {|x| x["rdata"]["address"] == "10.0.0.1"}
+    record = results.find {|x| x["rdata"]["address"] == "10.0.0.1"}
     
     if record
       delete_result = @d.delete_a_record(record["record_id"])

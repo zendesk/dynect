@@ -6,11 +6,9 @@ require 'soap/rpc/driver'
 class Dynect
   # Provide the customer, user, and password information to intiate the SOAP connection.
   # If desired, an alternate driver can be supplied to enable mocking or the use of different protocols.
-  def initialize(customer, user, password, driver = nil)
-    @driver = driver || setup_driver
-    @creds = {"cust" => customer, "user" => user, "pass" => password }
-    
-    add_methods
+  def initialize(customer, user, password, driver = setup_driver)
+    @driver = driver
+    @creds = { "cust" => customer, "user" => user, "pass" => password }
   end
   
   # Lists the zones associated with the accout. Specify a zone to get information on a specific one
@@ -19,7 +17,7 @@ class Dynect
     args["zone"] = zone if zone
     
     response = @driver.ZoneGet args
-    check_for_errors("when listing zone(s)", response)
+    check_for_errors("when listing zone(s) #{zone}", response)
     response.zones
   end
   
@@ -29,7 +27,7 @@ class Dynect
     args.merge!(options)
     
     response = @driver.ZoneAdd args
-    check_for_errors("when creating a zone", response)
+    check_for_errors("when creating zone #{zone} of type #{type}", response)
   end
   
   # Lists all the A records associated with the account.
@@ -43,12 +41,12 @@ class Dynect
   #   d = Dynect.new("customer", "username", "password")
   #   d.list_a_records("myzone.domain.com")
   #
-  def list_a_records(zone, options ={})
+  def list_a_records(zone, options = {})
     args = @creds.merge("type" => "A", "zone" => zone)
     args.merge!(options)
     
     response = @driver.RecordGet args
-    check_for_errors("when listing records", response)
+    check_for_errors("when listing records for #{zone}", response)
     response.records
   end
   
@@ -57,7 +55,7 @@ class Dynect
     args.merge!(options)
     
     response = @driver.RecordAdd args
-    check_for_errors("when adding an A record", response)
+    check_for_errors("when adding an A record for zone #{zone} and address #{address}", response)
   end
   
   # Updates A records identified by the ID
@@ -66,32 +64,32 @@ class Dynect
     args.merge!(options)
     
     response = @driver.RecordUpdate args
-    check_for_errors("when updating an A record", response)
+    check_for_errors("when updating an A record for record id #{id}", response)
   end
   
   # Deletes an A record identified by the ID
   def delete_a_record(id)
     response = @driver.RecordDelete @creds.merge("record_id" => id)
-    check_for_errors("when removing an A record", response)
+    check_for_errors("when removing an A record for record id #{id}", response)
   end
   
   # Lists the CNAME records associated with an account
-  def list_cname_records(zone, options ={})
+  def list_cname_records(zone, options = {})
     args = @creds.merge("type" => "CNAME", "zone" => zone)
     args.merge!(options)
     
     response = @driver.RecordGet args
-    check_for_errors("when listing CNAME records", response)
+    check_for_errors("when listing CNAME records for zone #{zone}", response)
     response.records
   end
   
   # Adds a CNAME record for the specified zone
-  def add_cname_record(zone, hostname, options = {} )
+  def add_cname_record(zone, hostname, options = {})
     args = @creds.merge("type" => "CNAME", "zone" => zone, "rdata" => {"cname" => hostname})
     args.merge!(options)
     
     response = @driver.RecordAdd args
-    check_for_errors("when adding a CNAME record", response)
+    check_for_errors("when adding a CNAME record for zone #{zone} and hostname #{hostname}", response)
   end
   
   def update_cname_record(id, options = {})
@@ -99,12 +97,12 @@ class Dynect
     args.merge!(options)
     
     response = @driver.RecordUpdate args
-    check_for_errors("when updating a CNAME record", response)
+    check_for_errors("when updating a CNAME record for record id #{id}", response)
   end
   
   def delete_cname_record(id)
     response = @driver.RecordDelete @creds.merge("record_id" => id)
-    check_for_errors("when removing a CNAME record", response)
+    check_for_errors("when removing a CNAME record for record id #{id}", response)
   end  
   
   def update_soa(id, options = {})
@@ -112,7 +110,7 @@ class Dynect
     args.merge!(options)
     
     response = @driver.RecordUpdate args
-    check_for_errors("when updating a SOA record", response)
+    check_for_errors("when updating a SOA record for record id #{id}", response)
   end
   
   def list_soa(zone, options = {})
@@ -120,7 +118,7 @@ class Dynect
     args.merge!(options)
     
     response = @driver.RecordGet args
-    check_for_errors("when listing SOA records", response)
+    check_for_errors("when listing SOA records for zone #{zone}", response)
     response.records.first
   end
   
@@ -129,15 +127,15 @@ class Dynect
     args.merge!(options)
     
     response = @driver.NodeGet args
-    check_for_errors("when listing nodes", response)
+    check_for_errors("when listing nodes for zone #{zone}", response)
   end
   
-  def add_node(node, zone, options ={})
+  def add_node(node, zone, options = {})
     args = @creds.merge("zone" => zone, "node" => "#{node}.#{zone}")
     args.merge!(options)
     
     response = @driver.NodeAdd args
-    check_for_errors("when adding a node", response)
+    check_for_errors("when adding node #{node} to zone #{zone}", response)
   end
   
   def delete_node(node, zone, options ={})
@@ -145,32 +143,26 @@ class Dynect
     args.merge!(options)
     
     response = @driver.NodeDelete args
-    check_for_errors("when deleting a node", response)
+    check_for_errors("when deleting node #{node} from zone #{zone}", response)
   end
   
 private
 
   def check_for_errors(message, response)
     if response["errors"]
-      raise "#{message}, you got this error: #{response["errors"]["action"]}" unless response["errors"]["action"].nil?
+      raise "#{message}, you got this error: #{response["errors"].inspect}"
+    end
+    if response["status"] == "failure"
+      raise "#{message}, you got this failure: #{response["messages"].inspect}"
     end
     response
   end
   
   def setup_driver
-    SOAP::RPC::Driver.new('https://api.dynect.net/soap/', '/DynectAPI/')
-  end
-  
-  def add_methods
-    @driver.add_method("ZoneGet", "args")
-    @driver.add_method("ZoneAdd", "args")
-    @driver.add_method("RecordGet", "args")
-    @driver.add_method("RecordAdd", "args")
-    @driver.add_method("RecordUpdate", "args")
-    @driver.add_method("RecordDelete", "args")
-    @driver.add_method("NodeGet", "args")
-    @driver.add_method("NodeAdd", "args")
-    @driver.add_method("NodeDelete", "args")
-  end
-  
+    driver = SOAP::RPC::Driver.new('https://api.dynect.net/soap/', '/DynectAPI/')
+    ["ZoneGet", "ZoneAdd", "RecordGet", "RecordAdd", "RecordUpdate", "RecordDelete", "NodeGet", "NodeAdd", "NodeDelete"].each do |soap_action|
+      driver.add_method(soap_action, "args")
+    end
+    driver
+  end  
 end

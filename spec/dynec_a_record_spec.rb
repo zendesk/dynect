@@ -5,7 +5,6 @@ describe Dynect, "when used to manage A records" do
 
   before(:each) do
     @driver = mock("driver")
-    @driver.should_receive(:add_method).at_least(:once)
       
     @d = Dynect.new("customer", "username", "password", @driver)
     

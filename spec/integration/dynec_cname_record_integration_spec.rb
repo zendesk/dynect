@@ -9,14 +9,13 @@ describe Dynect, "when used to manage CNAME records" do
   end
   
   before(:each) do
-    @d = Dynect.new(@config["company"], @config["username"], @config["password"], @driver)
+    @d = Dynect.new(@config["company"], @config["username"], @config["password"])
   end
   
   it "should be able to list records" do
     cname_domain = "cname"  
     results = @d.list_cname_records(cname_domain)
-    puts results.inspect
-    results.status.should == "success"
+    results.class.should == Array
   end
   
   # it "should be able to add an CNAME record" do

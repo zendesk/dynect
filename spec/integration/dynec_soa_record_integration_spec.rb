@@ -9,7 +9,7 @@ describe Dynect, "when used to manage SOA records" do
   end
   
   before(:each) do
-    @d = Dynect.new(@config["company"], @config["username"], @config["password"], @driver)
+    @d = Dynect.new(@config["company"], @config["username"], @config["password"])
   end
   
   it "should be able to update" do
