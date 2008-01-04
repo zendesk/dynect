@@ -16,6 +16,14 @@ Documentation
 =============
 From the trunk directory, you can generate docs with: rake rdoc
 
+Known Problems
+==============
+
+  * Dynect user must be able to login normally through UI
+    * For example, a newly created user will be prompted to change password
+      and hence cannot access the API until it is changed; this is currently
+      not handled
+
 Credits
 =======
 Developed by Colin Harris and Dave Hoover of Obtiva Corporation, http://obtiva.com
