@@ -10,6 +10,7 @@ SVN: http://dynect.rubyforge.org/svn/
 Specs
 =====
 From the trunk directory, you can run the specs with: rake spec
+You'll need to grab RSpec to run the specs: gem install rspec
 
 Documentation
 =============
@@ -17,5 +18,5 @@ From the trunk directory, you can generate docs with: rake rdoc
 
 Credits
 =======
-Dave Hoover and Colin Harris of Obtiva Corporation, http://obtiva.com
+Developed by Colin Harris and Dave Hoover of Obtiva Corporation, http://obtiva.com
 Sponsored by CloudScale Networks, http://cloudscale.net
