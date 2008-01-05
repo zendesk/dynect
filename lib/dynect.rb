@@ -3,6 +3,23 @@ gem 'soap4r'
 
 require 'soap/rpc/driver'
 
+# Extend array so we can easily convert to a hash using a block
+class Array
+  def to_hash_keys(&block)
+    Hash[*self.collect { |v|
+      [v, block.call(v)]
+    }.flatten]
+  end
+
+  def to_hash_values(&block)
+    Hash[*self.collect { |v|
+      [block.call(v), v]
+    }.flatten]
+  end
+end
+
+#test_hash = test_array.to_hash_values { |v| v.to_s }
+
 class Dynect
   # Provide the customer, user, and password information to intiate the SOAP connection.
   # If desired, an alternate driver can be supplied to enable mocking or the use of different protocols.
@@ -22,12 +39,13 @@ class Dynect
   end
   
   # Create a new zone
-  def create_zone(zone, type, options ={})
-    args = @creds.merge("zone" => zone, "type" => type)
+  def create_zone(options ={})
+    required_args = [ "zone", "type" ]
+    args = @creds.merge(required_args.to_hash_keys { |v| options[v] })
     args.merge!(options)
     
     response = @driver.ZoneAdd args
-    check_for_errors("when creating zone #{zone} of type #{type}", response)
+    check_for_errors("when creating zone #{args["zone"]} of type #{args["type"]}", response)
   end
   
   # Lists all the A records associated with the account.

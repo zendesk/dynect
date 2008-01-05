@@ -1,0 +1,171 @@
+#!/bin/env ruby
+#
+# = Synopsis
+#
+# Command line interface to drive Dynect library
+#
+# = Usage
+#
+#   dynect-cmd [-h|--help] [-V|--version] [-D|--debug] --cust=<customer name>
+#       --user=<username> --pass=<password> --zone=<zonename> [--rname=<email address>]
+#       [--callargs=<string>] <library_command>
+#
+# = Description
+#
+# CLI to Dynect simple wrapper for Dynect SOAP API
+#
+# = Options
+#
+# debug::
+#   Enable full debugging.
+#
+# help::
+#   Print this help message
+#
+# cust::
+# user::
+# pass::
+#   Dynect credentials
+#
+# rname::
+#   Name of contact for zone; required when creating zones
+#
+# = Author
+#
+# Dave Hoover, Colin Harris, Obtiva Corporation
+#
+# = Contributors & Sponsors
+#
+# Randy Bias, CloudScale Networks
+#
+# = Copyright
+#
+# GPL?
+#
+require 'rdoc/ri/ri_paths'
+require 'rdoc/usage'
+require 'rubygems'
+require 'getoptlong'
+require File.join(File.dirname(__FILE__), '..', 'lib', 'dynect')
+
+## Methods / Logic (to keep things clean)
+
+# Create a new Dynect handler
+def new_dynect_handle(customer,username,password)
+  @dynect = Dynect.new(customer,username,password)
+end
+
+# Invoke a method in the Dynect handler
+def dynect_call (method_name, call_options)
+  response=nil
+  #if ["list_zones"].include?(method_name)
+  #  response=@dynect.send(method_name, callargs)
+  #elsif callargs
+  #  response=@dynect.send(method_name, call_options)
+  #else
+  #  response=@dynect.send(method_name, callargs, call_options)
+  #end
+  response=@dynect.send(method_name, call_options)
+  if response.kind_of? Enumerable
+    print_list response
+  else
+    print_single response
+  end
+end
+
+# Print the output of an array response
+def print_list(zone_response)
+  zone_response.each do |response|
+    print_single response
+  end
+end
+
+# Print the output of a single non-array response
+def print_single(zone_response)
+  require 'pp'
+  puts "Call was a #{zone_response["status"]}: "
+  [ "errors", "status", "type" ].each do |dynect_response_data|
+    puts "  #{dynect_response_data} => #{zone_response[dynect_response_data]}\n" if zone_response[dynect_response_data]
+  end
+  if zone_response["messages"]
+    puts "  Messages returned from API: "
+    [ "create", "setup" ].each do |dynect_response_data|
+      puts "    #{dynect_response_data} => #{zone_response["messages"][dynect_response_data]}\n" if zone_response["messages"][dynect_response_data]
+    end
+  end
+  if zone_response["arguments"]
+    puts "  Additional information: "
+    [ "zone", "ttl" ].each do |dynect_response_data| 
+      puts "    #{dynect_response_data} => #{zone_response["arguments"][dynect_response_data]}\n" if zone_response["arguments"][dynect_response_data]
+    end
+    if zone_response["arguments"]["data"]
+      [ "rname", "master" ].each do |dynect_response_data| 
+        puts "    #{dynect_response_data} => #{zone_response["arguments"]["data"][dynect_response_data]}\n" if zone_response["arguments"]["data"][dynect_response_data]
+      end
+    end
+  end
+end
+
+options = [
+    [ "--debug",     "-D",   GetoptLong::NO_ARGUMENT ],
+    [ "--help",      "-h",   GetoptLong::NO_ARGUMENT ],
+    [ "--version",   "-V",   GetoptLong::NO_ARGUMENT ],
+    [ "--cust",      "-C",   GetoptLong::REQUIRED_ARGUMENT ],
+    [ "--user",      "-U",   GetoptLong::REQUIRED_ARGUMENT ],
+    [ "--pass",      "-P",   GetoptLong::REQUIRED_ARGUMENT ],
+    [ "--zone",      "-z",   GetoptLong::REQUIRED_ARGUMENT ],
+    [ "--zone-type",         GetoptLong::REQUIRED_ARGUMENT ],
+    [ "--rname",     "-r",   GetoptLong::REQUIRED_ARGUMENT ],
+    [ "--ttl",       "-T",   GetoptLong::REQUIRED_ARGUMENT ],
+    [ "--callargs",          GetoptLong::REQUIRED_ARGUMENT ],
+]
+
+result = GetoptLong.new(*options)
+
+dynect_customer_name = nil
+dynect_user_name     = nil
+dynect_password      = nil
+my_rname             = ""
+my_zone              = nil
+my_zone_type         = nil
+my_ttl               = 60
+my_callargs          = nil
+
+begin
+  result.each { |opt,arg|
+    case opt
+      when "--debug"
+        $DEBUG=true
+         DEBUG=true
+      when "--help"
+        RDoc::usage && exit
+      when "--version"
+        puts "Dynect library version is #{Dynect::VERSION::STRING}" && exit
+      when "--cust"
+        dynect_customer_name=arg.to_s
+      when "--user"
+        dynect_user_name=arg.to_s
+      when "--pass"
+        dynect_password=arg.to_s
+      when "--rname"
+        my_rname=arg.to_s
+      when "--zone"
+        my_zone=arg.to_s
+      when "--zone-type"
+        my_zone_type=arg.to_s
+      when "--callargs"
+        my_callargs=arg.to_s
+    end
+  }
+end
+
+if [ dynect_customer_name, dynect_user_name, dynect_password ].include?(nil)
+  RDoc::usage && exit
+end
+
+zone_options = { "ttl" => my_ttl, "zone" => my_zone, "type" => my_zone_type, "data" => {"rname" => my_rname} }
+COMMAND=ARGV[-1]
+
+new_dynect_handle(dynect_customer_name, dynect_user_name, dynect_password)
+
+dynect_call(COMMAND, zone_options)
