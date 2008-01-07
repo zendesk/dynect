@@ -37,17 +37,16 @@ describe Dynect, "when used to manage zones" do
       
   it "should require a zone name and type when creating a zone" do
     @driver.should_receive(:ZoneAdd).and_return(@result)
-    options = { "zone" => "test.domain.com", "type" => "primary" }
-    @d.create_zone(options)
+    @d.create_zone("test.domain.com", "primary")
   end
   
   it "should be able to accept additional parameters when creating a zone"  do
     @result.stub!(:call)
     @driver.should_receive(:ZoneAdd).and_return(@result)
     
-    options = {"zone" => "test.domain.com", "type" => "primary","ttl" => "24", "data" => {"rname" => "test@example.com", "master" => "192.168.1.1"}}
+    options = {"ttl" => "24", "data" => {"rname" => "test@example.com", "master" => "192.168.1.1"}}
     
-    @d.create_zone(options)
+    @d.create_zone("test.domain.com", "primary", options).should_not raise_error    
   end
   
 end
