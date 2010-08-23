@@ -160,6 +160,8 @@ private
   
   def setup_driver
     driver = SOAP::RPC::Driver.new('https://api.dynect.net/soap/', '/DynectAPI/')
+    driver.mapping_registry = SOAP::Mapping::EncodedRegistry.new(:allow_original_mapping => true)
+
     ["ZoneGet", "ZoneAdd", "RecordGet", "RecordAdd", "RecordUpdate", "RecordDelete", "NodeGet", "NodeAdd", "NodeDelete"].each do |soap_action|
       driver.add_method(soap_action, "args")
     end
